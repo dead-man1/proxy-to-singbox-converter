@@ -8,7 +8,7 @@
 
 Proxy to Sing-box Converter is a web-based tool designed to simplify the process of converting various proxy configurations to the Sing-box format and vice versa. This intuitive web application supports multiple proxy protocols and can handle plain configurations, Sing-box JSON configurations, links (including `ssconf://`), and Base64-encoded data, making it easy for users to generate and manage configurations.
 
-https://4n0nymou3.github.io/proxy-to-singbox-converter/
+https://dead-man1.github.io/proxy-to-singbox-converter/
 
 ## ✨ Features
 
