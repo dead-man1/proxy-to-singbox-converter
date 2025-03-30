@@ -108,3 +108,13 @@ function convertToShadowsocks(outbound) {
     const url = `ss://${auth}@${server}:${server_port}#${encodeURIComponent(tag || "ss")}`;
     return url;
 }
+
+function generateTag(protocol, enableCustomTag, customTagName) {
+    if (enableCustomTag && customTagName) {
+        const count = (window[protocol + 'Count'] || 0) + 1;
+        window[protocol + 'Count'] = count;
+        return `${protocol}-${customTagName}-${count}`;
+    } else {
+        return `${protocol}-${generateUUID().slice(0, 8)}`;
+    }
+}

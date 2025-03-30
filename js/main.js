@@ -149,3 +149,9 @@ function pasteFromFile() {
 
     input.click();
 }
+
+function toggleCustomTagInput() {
+    const checkbox = document.getElementById('enableCustomTag');
+    const input = document.getElementById('customTagInput');
+    input.disabled = !checkbox.checked;
+}

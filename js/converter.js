@@ -143,9 +143,17 @@ function convertFromJSON(jsonText) {
 }
 
 async function convertConfig() {
+    window.vmessCount = 0;
+    window.vlessCount = 0;
+    window.trojanCount = 0;
+    window.hysteria2Count = 0;
+    window.ssCount = 0;
+
     let input = document.getElementById('input').value.trim();
     const errorDiv = document.getElementById('error');
     const enableAdBlockAndIran = document.getElementById('enableAdBlockAndIran').checked;
+    const enableCustomTag = document.getElementById('enableCustomTag').checked;
+    const customTagName = document.getElementById('customTagInput').value.trim();
 
     if (!input) {
         errorDiv.textContent = 'Please enter proxy configurations or Sing-box JSON';
@@ -177,15 +185,15 @@ async function convertConfig() {
                 let converted;
                 try {
                     if (config.startsWith('vmess://')) {
-                        converted = convertVmess(config);
+                        converted = convertVmess(config, enableCustomTag, customTagName);
                     } else if (config.startsWith('vless://')) {
-                        converted = convertVless(config);
+                        converted = convertVless(config, enableCustomTag, customTagName);
                     } else if (config.startsWith('trojan://')) {
-                        converted = convertTrojan(config);
+                        converted = convertTrojan(config, enableCustomTag, customTagName);
                     } else if (config.startsWith('hysteria2://') || config.startsWith('hy2://')) {
-                        converted = convertHysteria2(config);
+                        converted = convertHysteria2(config, enableCustomTag, customTagName);
                     } else if (config.startsWith('ss://')) {
-                        converted = convertShadowsocks(config);
+                        converted = convertShadowsocks(config, enableCustomTag, customTagName);
                     }
                 } catch (e) {
                     console.error(`Failed to convert config: ${config}`, e);
