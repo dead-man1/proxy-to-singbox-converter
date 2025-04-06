@@ -1,4 +1,12 @@
 const SUPPORTED_PROTOCOLS = ['vmess://', 'vless://', 'trojan://', 'hysteria2://', 'hy2://', 'ss://'];
+const CORS_PROXIES = [
+    'https://api.allorigins.win/get?url=',
+    'https://corsproxy.io/?',
+    'https://cors-anywhere.herokuapp.com/',
+    'https://api.codetabs.com/v1/proxy?quest=',
+    'https://cors-proxy.htmldriven.com/?url=',
+    'https://thingproxy.freeboard.io/fetch/'
+];
 
 function isLink(str) {
     return str.startsWith('http://') || str.startsWith('https://') || str.startsWith('ssconf://');
@@ -14,8 +22,15 @@ async function fetchContent(link) {
     if (link.startsWith('ssconf://')) {
         link = link.replace('ssconf://', 'https://');
     }
+    
     try {
-        const response = await fetch(link);
+        const response = await fetch(link, {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                'Accept-Language': 'en-US,en;q=0.5',
+            }
+        });
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -30,7 +45,52 @@ async function fetchContent(link) {
         }
         return text;
     } catch (error) {
-        console.error(`Failed to fetch ${link}:`, error);
+        console.error(`Failed to fetch ${link} directly:`, error);
+        
+        for (const proxyUrl of CORS_PROXIES) {
+            try {
+                let fullProxyUrl;
+                
+                if (proxyUrl === CORS_PROXIES[0]) {
+                    fullProxyUrl = `${proxyUrl}${encodeURIComponent(link)}`;
+                    const response = await fetch(fullProxyUrl);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error with ${proxyUrl}! status: ${response.status}`);
+                    }
+                    const data = await response.json();
+                    let text = data.contents.trim();
+                    if (isBase64(text)) {
+                        try {
+                            text = atob(text);
+                        } catch (e) {
+                            console.error(`Failed to decode Base64 from ${link} via ${proxyUrl}:`, e);
+                        }
+                    }
+                    return text;
+                } else {
+                    fullProxyUrl = `${proxyUrl}${encodeURIComponent(link)}`;
+                    const response = await fetch(fullProxyUrl);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error with ${proxyUrl}! status: ${response.status}`);
+                    }
+                    let text = await response.text();
+                    text = text.trim();
+                    if (isBase64(text)) {
+                        try {
+                            text = atob(text);
+                        } catch (e) {
+                            console.error(`Failed to decode Base64 from ${link} via ${proxyUrl}:`, e);
+                        }
+                    }
+                    return text;
+                }
+            } catch (proxyError) {
+                console.error(`Failed to fetch ${link} via ${proxyUrl}:`, proxyError);
+                continue;
+            }
+        }
+        
+        console.error(`All proxy attempts failed for ${link}`);
         return null;
     }
 }
